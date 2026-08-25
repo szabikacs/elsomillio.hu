@@ -35,6 +35,9 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll(".reveal, .stats").forEach(el => {
   observer.observe(el);
 });
+const yearEl = document.getElementById("year");
+if (yearEl) yearEl.textContent = new Date().getFullYear();
+
 const contactForm = document.getElementById("contactForm");
 const formSuccess = document.getElementById("formSuccess");
 
