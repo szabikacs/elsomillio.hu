@@ -58,9 +58,14 @@
 .calc .panel .sub{color:var(--muted);font-size:13.5px;margin:4px 0 0}
 /* Asztali nézet: bal oszlopban a bemenetek, az előtörlesztés és az összehasonlítás egymás alatt, jobbra a (magas)
    eredménypanel; így nem marad üres hely. Mobilon: bemenetek, eredmény, előtörlesztés, összehasonlítás. */
-.calc .top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-rows:auto auto 1fr;
-  grid-template-areas:"in res" "pp res" "cmp res";gap:22px;align-items:start}
-.calc .a-in{grid-area:in} .calc .a-res{grid-area:res} .calc .a-pp{grid-area:pp} .calc .a-cmp{grid-area:cmp}
+.calc .top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);grid-template-rows:auto 1fr auto;
+  grid-template-areas:"in res" "pp res" "cmp cmp";gap:22px;align-items:start}
+.calc .a-in{grid-area:in} .calc .a-res{grid-area:res} .calc .a-pp{grid-area:pp;align-self:stretch} .calc .a-cmp{grid-area:cmp}
+/* teljes szélességben egy változat = egy sor: fejléc balra, értékek egy sorban */
+@media (min-width:861px){
+  .calc .cmpload{grid-template-columns:minmax(170px,230px) minmax(0,1fr);align-items:center;gap:16px}
+  .calc .cmpvals{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
 @media (max-width:860px){.calc .top{grid-template-columns:minmax(0,1fr);grid-template-rows:none;grid-template-areas:"in" "res" "pp" "cmp"}}
 .calc [hidden]{display:none!important}
 
@@ -157,13 +162,23 @@
 .calc a.calc-btn:not(.ghost){color:var(--ongold)}
 .calc .calc-btn:focus-visible,.calc .seg button:focus-visible,.calc .tgt:focus-within,.calc button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 .calc-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
-.calc .cmpwrap{overflow-x:auto;margin-top:14px}
+.calc .cmplist{display:grid;gap:10px;margin-top:14px}
+.calc .cmpitem{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;border:1px solid var(--line);border-radius:12px;background:var(--panel2);overflow:hidden;transition:border-color .15s}
+.calc .cmpitem:hover{border-color:var(--line2)}
+.calc .cmpitem.active{border-color:var(--gold)}
+.calc .cmpload{display:grid;gap:8px;padding:12px 14px;background:transparent;border:0;color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.calc .cmpload:hover .cmphead b{color:var(--gold2)}
+.calc .cmphead{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.calc .cmphead b{font-size:14px}
+.calc .cmpvals{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px 12px;font-size:13.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.calc .cmpvals small{display:block;font-size:11.5px;font-weight:500;color:var(--muted)}
+.calc .cmpdel{padding:0 14px;background:transparent;border:0;border-left:1px solid var(--line);color:var(--muted);font:600 13px var(--font);cursor:pointer}
+.calc .cmpdel:hover{color:var(--warn);background:rgba(227,154,107,.08)}
 .calc table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
 .calc th{font-size:12px;color:var(--muted);font-weight:600;text-align:right;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
 .calc td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 .calc th:first-child,.calc td:first-child{text-align:left}
 .calc tr.pp td{background:rgba(214,178,94,.08)}
-.calc td .x{background:none;border:0;color:var(--faint);cursor:pointer;font-size:16px}
 .calc .empty{color:var(--muted);font-size:14px;margin-top:12px}
 .calc .linkout{display:flex;gap:8px;margin-top:10px}
 .calc .linkout input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--muted);padding:8px 10px;font:13px var(--font)}
@@ -343,7 +358,7 @@
       </div>
       <p class="hint" style="margin:10px 0 0">A PDF-ben benne van az aktuális számítás, a mentett változatok és az éves törlesztési terv.</p>
       <div class="linkout" id="linkbox" hidden><input id="linktxt" readonly aria-label="Megosztható link"></div>
-      <div class="cmpwrap"><table id="cmp" hidden><thead><tr><th>Változat</th><th>Összeg</th><th>Futamidő</th><th>Kamat</th><th>Törlesztő</th><th>Teljes kamat</th><th></th></tr></thead><tbody></tbody></table></div>
+      <div class="cmplist" id="cmp" hidden></div>
       <p class="empty" id="cmp_empty">Még nincs mentett változat.</p>
     </section>
   </div>
@@ -516,6 +531,7 @@
     drawJTM();
     highlightGuide(hasPP);
     updateCta();
+    drawCmp(); // a "betöltve" jelölés kövesse az aktuális számítást
   }
 
   // A konzultációs gomb átadja a számítást a főoldali űrlapnak: /?calc=összeg-hónap-kamat-törlesztő#konzultacio
@@ -668,13 +684,42 @@
   let cmp = [];
   try { cmp = JSON.parse(localStorage.getItem('esm_cmp') || '[]'); } catch (e) {}
   const saveCmp = () => { try { localStorage.setItem('esm_cmp', JSON.stringify(cmp)); } catch (e) {} };
+  // Egy változat azonos-e egy másikkal / az éppen kiszámolttal (kerekítve, ahogy elmentjük).
+  const sameCalc = (c, a, n, r) => Math.round(c.a) === Math.round(a) && c.n === Math.round(n) && Math.round(c.r * 100) === Math.round(r * 100);
+
+  // Kártyás lista: a keskeny oszlopban is minden látszik. A kártyára kattintva visszatölti a változatot, a Törlés gomb eltávolítja.
   function drawCmp() {
-    const t = $('cmp'); t.hidden = !cmp.length; $('cmp_empty').hidden = !!cmp.length;
-    const best = Math.min(...cmp.map(c => c.int));
-    t.tBodies[0].innerHTML = cmp.map((c, i) => `<tr><td>${i + 1}. változat${c.int === best && cmp.length > 1 ? ' <span class="pill ok">legkevesebb kamat</span>' : ''}</td><td>${ft(c.a)}</td><td>${yrs(c.n)}</td><td>${c.r.toLocaleString('hu-HU', {maximumFractionDigits: 2})}%</td><td>${ft(c.p)}</td><td>${ft(c.int)}</td><td><button class="x" data-i="${i}" aria-label="${i + 1}. változat törlése">×</button></td></tr>`).join('');
-    t.querySelectorAll('.x').forEach(b => b.onclick = () => { cmp.splice(+b.dataset.i, 1); saveCmp(); drawCmp(); });
+    const box = $('cmp'); box.hidden = !cmp.length; $('cmp_empty').hidden = !!cmp.length;
+    const bestIdx = cmp.length > 1 ? cmp.reduce((b, c, i) => c.int < cmp[b].int ? i : b, 0) : -1;
+    box.innerHTML = cmp.map((c, i) => {
+      const active = sameCalc(c, S.amount, S.months, S.rate);
+      return `<div class="cmpitem${active ? ' active' : ''}">
+        <button type="button" class="cmpload" data-i="${i}" aria-label="${i + 1}. változat betöltése a kalkulátorba">
+          <span class="cmphead"><b>${i + 1}. változat</b>${i === bestIdx ? '<span class="pill ok">legkevesebb kamat</span>' : ''}${active ? '<span class="pill mid">betöltve</span>' : ''}</span>
+          <span class="cmpvals">
+            <span><small>Összeg</small>${ft(c.a)}</span>
+            <span><small>Futamidő</small>${yrs(c.n)}</span>
+            <span><small>Kamat</small>${c.r.toLocaleString('hu-HU', {maximumFractionDigits: 2})}%</span>
+            <span><small>Törlesztő</small>${ft(c.p)}</span>
+            <span><small>Teljes kamat</small>${ft(c.int)}</span>
+          </span>
+        </button>
+        <button type="button" class="cmpdel" data-i="${i}" aria-label="${i + 1}. változat törlése">Törlés</button>
+      </div>`;
+    }).join('');
+    box.querySelectorAll('.cmpdel').forEach(b => b.onclick = () => { cmp.splice(+b.dataset.i, 1); saveCmp(); drawCmp(); });
+    box.querySelectorAll('.cmpload').forEach(b => b.onclick = () => {
+      const c = cmp[+b.dataset.i];
+      Object.assign(S, {amount: c.a, months: c.n, rate: c.r, target: 'payment'});
+      document.querySelectorAll('input[name=target]').forEach(r => { r.checked = r.value === 'payment'; });
+      render();
+      document.querySelector('.calc .a-res').scrollIntoView({behavior: 'smooth', block: 'start'});
+    });
   }
   $('cmp_add').onclick = () => { if ($('err').textContent) return;
+    if (cmp.some(c => sameCalc(c, S.amount, S.months, S.rate))) {
+      $('cmp_add').textContent = 'Ez már el van mentve'; setTimeout(() => $('cmp_add').textContent = 'Változat mentése', 1800); return;
+    }
     const int = schedule(false).reduce((s, x) => s + x.it, 0);
     cmp.push({a: S.amount, n: Math.round(S.months), r: S.rate, p: S.payment, int}); if (cmp.length > 5) cmp.shift(); saveCmp(); drawCmp(); };
 
