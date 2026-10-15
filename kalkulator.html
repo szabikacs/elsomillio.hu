@@ -153,6 +153,8 @@
 .calc-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 16px;font:700 14px var(--font);
   cursor:pointer;border:1px solid var(--gold);background:var(--gold);color:var(--ongold);text-decoration:none}
 .calc-btn.ghost{background:transparent;color:var(--gold)}
+/* linkként használt gomb: a .calc a{color} szabály ne írja felül a sötét feliratot */
+.calc a.calc-btn:not(.ghost){color:var(--ongold)}
 .calc .calc-btn:focus-visible,.calc .seg button:focus-visible,.calc .tgt:focus-within,.calc button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
 .calc-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 .calc .cmpwrap{overflow-x:auto;margin-top:14px}
@@ -835,6 +837,10 @@
     if ($('err').textContent) return;
     const btn = $('pdf_btn'), label = btn.textContent;
     btn.disabled = true; btn.textContent = 'PDF készül…';
+    // A html2canvas a görgetési helyzettel eltolva rajzol (üres első oldal, lemaradó vég),
+    // ezért a kép idejére az oldal tetejére ugrunk, utána visszaállunk.
+    const keepY = window.scrollY;
+    window.scrollTo({top: 0, left: 0, behavior: 'instant'});
     try {
       await loadH2P();
       const d = new Date(), stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -842,13 +848,14 @@
         margin: [12, 12, 14, 12],
         filename: 'elsomillio-hitelkalkulacio-' + stamp + '.pdf',
         image: {type: 'jpeg', quality: 0.95},
-        html2canvas: {scale: 2, backgroundColor: '#ffffff', useCORS: true, letterRendering: true},
+        html2canvas: {scale: 2, backgroundColor: '#ffffff', useCORS: true, letterRendering: true, scrollX: 0, scrollY: 0},
         jsPDF: {unit: 'mm', format: 'a4', orientation: 'portrait'},
         pagebreak: {mode: ['css', 'legacy'], avoid: ['tr', '.block']}
       }).from(buildReport()).save();
     } catch (e) {
       alert('Nem sikerült elkészíteni a PDF-et. Kérlek, próbáld újra.');
     } finally {
+      window.scrollTo({top: keepY, left: 0, behavior: 'instant'});
       btn.disabled = false; btn.textContent = label;
     }
   };
