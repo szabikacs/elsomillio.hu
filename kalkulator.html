@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hitelkalkulátor – törlesztő, előtörlesztés, végtörlesztés | elsomillio.hu</title>
+  <meta name="description" content="Ingyenes annuitásos hitelkalkulátor: havi törlesztő, teljes kamat, törlesztési terv, előtörlesztés és végtörlesztés megtakarítással. Kács Szabolcs pénzügyi tanácsadó, elsomillio.hu." />
+  <meta name="theme-color" content="#0b2420" />
+  <link rel="canonical" href="https://elsomillio.hu/kalkulator" />
+
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="elsomillio.hu" />
+  <meta property="og:locale" content="hu_HU" />
+  <meta property="og:url" content="https://elsomillio.hu/kalkulator" />
+  <meta property="og:title" content="Hitelkalkulátor – mennyi lesz a törlesztőd?" />
+  <meta property="og:description" content="Havi törlesztő, teljes kamat, előtörlesztés és végtörlesztés megtakarítással. Számold ki, mielőtt bemész a bankba." />
+  <meta property="og:image" content="https://elsomillio.hu/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Hitelkalkulátor – mennyi lesz a törlesztőd?" />
+  <meta name="twitter:description" content="Havi törlesztő, teljes kamat, előtörlesztés és végtörlesztés megtakarítással." />
+  <meta name="twitter:image" content="https://elsomillio.hu/og-image.png" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css" />
+<style>
+/* Hitelkalkulátor. Minden szabály a .calc konténerre van szűkítve, az ütköző osztálynevek calc- előtagot kaptak,
+   hogy a weboldal fejléce, lábléce és gombjai (style.css) érintetlenek maradjanak. Színek: a weboldal palettája. */
+:root{
+  --bg:#0b2420; --panel:#112E28; --panel2:#163830; --line:#24473E; --line2:#2F5A4F;
+  --fg:#f7f3ea; --muted:#A3B5AD; --faint:#6F877E;
+  --gold:#d6b25e; --gold2:#f2d37d; --ongold:#09110f;
+  --principal:#79B796; --warn:#E39A6B; --save:#8EC5E6;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --r:16px;
+  color-scheme:dark;
+}
+.calc{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;font-size:15px;line-height:1.5}
+.calc > *, .calc .panel{min-width:0}
+.calc a{color:var(--gold)}
+.calc .num{font-variant-numeric:tabular-nums}
+.calc h1,.calc h2,.calc h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+.calc-eyebrow{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.calc-head{display:grid;gap:8px;padding-top:8px}
+.calc-head h1{font-size:clamp(32px,5vw,54px);font-weight:800;line-height:1.05;letter-spacing:-.04em}
+.calc-head h1 span{color:var(--gold)}
+.calc-head p{color:var(--muted);margin:0;max-width:62ch}
+
+.calc .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.calc .panel h2{font-size:18px;font-weight:700}
+.calc .panel .sub{color:var(--muted);font-size:13.5px;margin:4px 0 0}
+.calc .top{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:22px;align-items:start}
+@media (max-width:860px){.calc .top{grid-template-columns:1fr}}
+
+/* bemenetek */
+.calc .fields{display:grid;gap:18px;margin-top:18px}
+.calc .field{display:grid;gap:8px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);transition:border-color .15s}
+.calc .field.target{border-color:var(--gold);background:linear-gradient(180deg,rgba(214,178,94,.10),rgba(214,178,94,.03))}
+.calc .frow{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.calc .field label.l{font-weight:600;font-size:14px}
+.calc .tgt{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);cursor:pointer;user-select:none;
+  border:1px solid var(--line2);border-radius:99px;padding:3px 10px 3px 7px}
+.calc .tgt input{accent-color:var(--gold);margin:0}
+.calc .field.target .tgt{color:var(--ongold);background:var(--gold);border-color:var(--gold);font-weight:700}
+.calc .inbox{display:flex;align-items:stretch;border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:var(--bg)}
+.calc .inbox input{flex:1;min-width:0;background:transparent;border:0;color:var(--fg);font:600 18px var(--font);padding:10px 12px;font-variant-numeric:tabular-nums}
+.calc .inbox input:focus{outline:none}
+.calc .inbox:focus-within{border-color:var(--gold)}
+.calc .inbox .unit{display:flex;align-items:center;padding:0 12px;color:var(--muted);font-size:14px;border-left:1px solid var(--line2);background:var(--panel)}
+.calc .field.target .inbox input{color:var(--gold2)}
+.calc .field.target input[readonly]{cursor:default}
+.calc .hint{font-size:12.5px;color:var(--faint)}
+.calc input[type=range]{width:100%;accent-color:var(--gold);margin:2px 0 0}
+.calc .err{color:var(--warn);font-size:13px;min-height:0}
+
+/* eredmény */
+.calc .result{display:grid;gap:18px}
+.calc-hero{display:grid;gap:4px}
+.calc-hero .lbl{color:var(--muted);font-size:14px}
+.calc-hero .big{font-size:clamp(36px,6vw,54px);font-weight:800;line-height:1;color:var(--gold2)}
+.calc-hero .big small{font-size:.42em;font-weight:600;color:var(--muted);margin-left:6px}
+.calc .kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.calc .kpis{grid-template-columns:1fr 1fr}}
+.calc .kpi{border-top:2px solid var(--line2);padding-top:8px}
+.calc .kpi b{display:block;font-size:17px;font-weight:700}
+.calc .kpi span{font-size:12.5px;color:var(--muted)}
+.calc .kpi.int{border-color:var(--gold)} .calc .kpi.pr{border-color:var(--principal)}
+.calc .ratio{display:grid;gap:6px}
+.calc .ratio .bar{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--line)}
+.calc .ratio .bar i{display:block;height:100%}
+.calc .ratio .legend{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.calc .dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:6px;vertical-align:0}
+.calc .chart svg{width:100%;height:auto;display:block}
+.calc .chart text{fill:var(--faint);font:11px var(--font);font-variant-numeric:tabular-nums}
+.calc .chartleg{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);margin-top:6px}
+
+/* jövedelem-ellenőrzés */
+.calc .jtm{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:end;padding-top:16px;border-top:1px dashed var(--line2)}
+.calc .jtm .inbox input{font-size:16px;padding:8px 10px}
+.calc .pill{display:inline-block;font-size:12.5px;font-weight:700;border-radius:99px;padding:4px 10px;white-space:nowrap}
+.calc .pill.ok{background:rgba(121,183,150,.16);color:var(--principal)}
+.calc .pill.mid{background:rgba(214,178,94,.16);color:var(--gold2)}
+.calc .pill.hi{background:rgba(227,154,107,.16);color:var(--warn)}
+.calc .jtm p{grid-column:1/-1;margin:0;font-size:13px;color:var(--muted)}
+
+/* végtörlesztés megtakarítással */
+.calc .savebox{display:grid;gap:14px;padding:18px;border-radius:14px;border:1px solid rgba(142,197,230,.35);
+  background:linear-gradient(180deg,rgba(142,197,230,.09),rgba(142,197,230,.02))}
+.calc .savebox h3{font-size:17px}
+.calc .savebox .sub{margin:0}
+.calc .assume{display:flex;flex-wrap:wrap;gap:6px}
+.calc .assume span{font-size:12px;color:var(--save);border:1px solid rgba(142,197,230,.35);border-radius:99px;padding:2px 9px}
+.calc .feerow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+.calc .feerow .calc-btn{padding:10px 12px;font-size:13px}
+.calc .savekpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:520px){.calc .savekpis{grid-template-columns:1fr}}
+.calc .savekpis div{border-top:2px solid var(--save);padding-top:8px}
+.calc .savekpis b{display:block;font-size:18px;font-weight:800}
+.calc .savekpis span{font-size:12.5px;color:var(--muted)}
+.calc .savenote{font-size:13px;color:var(--muted);margin:0}
+.calc .savenote b{color:var(--fg)}
+.calc .sumbox{display:grid;border-radius:12px;overflow:hidden;border:1px solid rgba(142,197,230,.35)}
+.calc .sumbox:empty{display:none}
+.calc .sumrow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 14px;font-size:14px;color:var(--muted);
+  border-bottom:1px solid rgba(142,197,230,.18)}
+.calc .sumrow b{color:var(--fg);font-weight:700;white-space:nowrap}
+.calc .sumrow.tot{border-bottom:0;background:rgba(142,197,230,.14);color:var(--fg);font-weight:700}
+.calc .sumrow.tot b{color:var(--save);font-size:20px;font-weight:800}
+.calc .savego{color:var(--save);font-weight:700;font-size:13.5px;text-decoration:none}
+
+/* második sor */
+.calc .duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.calc .duo{grid-template-columns:1fr}}
+.calc .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+@media (max-width:520px){.calc .grid2{grid-template-columns:1fr}}
+.calc .mini label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.calc .seg{display:flex;border:1px solid var(--line2);border-radius:10px;overflow:hidden;margin-top:12px}
+.calc .seg button{flex:1;background:transparent;color:var(--muted);border:0;padding:10px 8px;font:600 13.5px var(--font);cursor:pointer}
+.calc .seg button[aria-pressed=true]{background:var(--gold);color:var(--ongold)}
+.calc .save{margin-top:14px;padding:14px;border-radius:12px;background:rgba(121,183,150,.10);border:1px solid rgba(121,183,150,.3);font-size:14px}
+.calc .save b{color:var(--principal)}
+.calc .save.none{background:transparent;border-style:dashed;border-color:var(--line2);color:var(--muted)}
+.calc-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 16px;font:700 14px var(--font);
+  cursor:pointer;border:1px solid var(--gold);background:var(--gold);color:var(--ongold);text-decoration:none}
+.calc-btn.ghost{background:transparent;color:var(--gold)}
+.calc .calc-btn:focus-visible,.calc .seg button:focus-visible,.calc .tgt:focus-within,.calc button:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.calc-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.calc .cmpwrap{overflow-x:auto;margin-top:14px}
+.calc table{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+.calc th{font-size:12px;color:var(--muted);font-weight:600;text-align:right;padding:8px 10px;border-bottom:1px solid var(--line2);white-space:nowrap}
+.calc td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.calc th:first-child,.calc td:first-child{text-align:left}
+.calc tr.pp td{background:rgba(214,178,94,.08)}
+.calc td .x{background:none;border:0;color:var(--faint);cursor:pointer;font-size:16px}
+.calc .empty{color:var(--muted);font-size:14px;margin-top:12px}
+.calc .linkout{display:flex;gap:8px;margin-top:10px}
+.calc .linkout input{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--muted);padding:8px 10px;font:13px var(--font)}
+
+/* tábla */
+.calc .thead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+.calc .thead .seg{margin:0;min-width:220px}
+.calc .tablewrap{overflow-x:auto;margin-top:14px;max-height:520px;overflow-y:auto}
+.calc .tablewrap th{position:sticky;top:0;background:var(--panel)}
+.calc .startd{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+.calc .startd input{background:var(--bg);border:1px solid var(--line2);border-radius:8px;color:var(--fg);padding:6px 8px;font:13px var(--font)}
+
+/* tovább az oldalra */
+.calc .guide{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:860px){.calc .guide{grid-template-columns:1fr}}
+.calc .gcard{display:grid;gap:6px;align-content:start;padding:18px;border-radius:14px;border:1px solid var(--line);background:var(--panel);text-decoration:none;color:var(--fg);transition:border-color .15s,transform .15s}
+.calc .gcard:hover{border-color:var(--gold);transform:translateY(-2px)}
+.calc .gcard .calc-eyebrow{font-size:11px}
+.calc .gcard b{font-size:16px}
+.calc .gcard p{margin:0;color:var(--muted);font-size:13.5px}
+.calc .gcard .go{color:var(--gold);font-weight:700;font-size:13.5px;margin-top:4px}
+.calc .gcard.hot{border-color:rgba(214,178,94,.6)}
+.calc-cta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;padding:26px;border-radius:var(--r);
+  background:radial-gradient(120% 140% at 100% 0%,rgba(214,178,94,.22),transparent 55%),var(--panel2);border:1px solid var(--line2)}
+.calc-cta h2{font-size:22px}
+.calc-cta p{margin:6px 0 0;color:var(--muted);max-width:60ch}
+.calc-cta .who{font-size:13px;color:var(--faint);margin-top:10px}
+@media (max-width:640px){.calc-cta{grid-template-columns:1fr}}
+.calc .fine{font-size:12px;color:var(--faint);max-width:90ch;margin:0}
+@media (prefers-reduced-motion:reduce){.calc *{transition:none!important}}
+</style>
+</head>
+
+<body>
+  <div class="bg-glow one"></div>
+  <div class="bg-glow two"></div>
+
+  <main class="page">
+
+    <header class="brand">
+      <a class="brand-mark" href="/" aria-label="elsomillio.hu — vissza a főoldalra">
+        <svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+          <circle cx="50" cy="50" r="39" fill="none" stroke="#d6b25e" stroke-width="6" />
+          <path d="M37 36 L55 26 L55 70 L66 70 L66 78 L34 78 L34 70 L45 70 L45 39 Z" fill="#d6b25e" />
+        </svg>
+        <span class="brand-name">Kács Szabolcs<small>pénzügyi tanácsadó</small></span>
+      </a>
+      <nav class="brand-nav" aria-label="Fő navigáció">
+        <a class="brand-link" href="/kalkulator" aria-current="page">Kalkulátor</a>
+        <a class="brand-cta" href="/#konzultacio">Konzultáció</a>
+      </nav>
+    </header>
+
+<div class="calc">
+  <div class="calc-head">
+    <div class="calc-eyebrow">elsomillio.hu · Kalkulátor</div>
+    <h1>Mennyi lesz a <span>törlesztőd?</span></h1>
+    <p>Add meg a hitel adatait, és a kalkulátor kiszámolja a havi törlesztőt, a teljes kamatot és a törlesztési tervet. Bármelyik mezőt kiszámoltathatod: jelöld meg a <b>Számold ki</b> gombbal azt, amelyiket nem ismered.</p>
+  </div>
+
+  <div class="top">
+    <section class="panel" aria-labelledby="h-adatok">
+      <h2 id="h-adatok">A hitel adatai</h2>
+      <p class="sub">Egy mezőt mindig a másik háromból számolunk.</p>
+      <div class="fields">
+        <div class="field" data-f="amount">
+          <div class="frow"><label class="l" for="amount">Hitelösszeg</label>
+            <label class="tgt"><input type="radio" name="target" value="amount">Számold ki</label></div>
+          <div class="inbox"><input id="amount" inputmode="numeric" autocomplete="off"><span class="unit">Ft</span></div>
+          <input type="range" id="amount_r" min="500000" max="80000000" step="100000" aria-label="Hitelösszeg csúszka">
+        </div>
+        <div class="field" data-f="months">
+          <div class="frow"><label class="l" for="months">Futamidő</label>
+            <label class="tgt"><input type="radio" name="target" value="months">Számold ki</label></div>
+          <div class="inbox"><input id="months" inputmode="numeric" autocomplete="off"><span class="unit">hónap</span></div>
+          <input type="range" id="months_r" min="6" max="420" step="6" aria-label="Futamidő csúszka">
+          <span class="hint" id="months_h"></span>
+        </div>
+        <div class="field" data-f="rate">
+          <div class="frow"><label class="l" for="rate">Éves kamatláb</label>
+            <label class="tgt"><input type="radio" name="target" value="rate">Számold ki</label></div>
+          <div class="inbox"><input id="rate" inputmode="decimal" autocomplete="off"><span class="unit">%</span></div>
+          <input type="range" id="rate_r" min="0" max="20" step="0.05" aria-label="Kamatláb csúszka">
+          <span class="hint">Ügyleti kamat. A THM ennél jellemzően magasabb, mert a díjakat is tartalmazza.</span>
+        </div>
+        <div class="field" data-f="payment">
+          <div class="frow"><label class="l" for="payment">Havi törlesztőrészlet</label>
+            <label class="tgt"><input type="radio" name="target" value="payment" checked>Számold ki</label></div>
+          <div class="inbox"><input id="payment" inputmode="numeric" autocomplete="off"><span class="unit">Ft</span></div>
+          <input type="range" id="payment_r" min="5000" max="1000000" step="1000" aria-label="Törlesztőrészlet csúszka">
+        </div>
+        <div class="err" id="err" role="status"></div>
+      </div>
+    </section>
+
+    <section class="panel result" aria-labelledby="h-ered">
+      <div class="calc-hero">
+        <h2 id="h-ered" class="lbl" style="font-weight:500;font-size:14px">Havi törlesztőrészlet</h2>
+        <div class="big num" id="r_pay">–</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi pr"><b class="num" id="r_amount">–</b><span>hitelösszeg (tőke)</span></div>
+        <div class="kpi int"><b class="num" id="r_int">–</b><span>teljes kamat</span></div>
+        <div class="kpi"><b class="num" id="r_total">–</b><span>visszafizetés összesen</span></div>
+      </div>
+      <div class="ratio">
+        <div class="bar"><i id="bar_p" style="background:var(--principal)"></i><i id="bar_i" style="background:var(--gold)"></i></div>
+        <div class="legend"><span><i class="dot" style="background:var(--principal)"></i>Tőke <b class="num" id="p_pct"></b></span><span><i class="dot" style="background:var(--gold)"></i>Kamat <b class="num" id="i_pct"></b></span></div>
+      </div>
+      <div class="chart">
+        <svg id="chart" viewBox="0 0 640 230" role="img" aria-label="Tőketartozás és összes befizetett kamat évenként"></svg>
+        <div class="chartleg">
+          <span><i class="dot" style="background:var(--principal)"></i>Fennálló tőketartozás</span>
+          <span><i class="dot" style="background:var(--gold)"></i>Eddig kifizetett kamat</span>
+          <span id="leg_base" hidden><i class="dot" style="background:var(--faint)"></i>Előtörlesztés nélkül</span>
+          <span id="leg_save" hidden><i class="dot" style="background:var(--save)"></i>Megtakarítási számla egyenlege</span>
+        </div>
+      </div>
+      <div class="jtm">
+        <div class="mini">
+          <label for="income">Mennyi a havi nettó jövedelmed? (nem kötelező)</label>
+          <div class="inbox"><input id="income" inputmode="numeric" autocomplete="off" placeholder="pl. 450 000"><span class="unit">Ft</span></div>
+        </div>
+        <span class="pill" id="jtm_pill" hidden></span>
+        <p id="jtm_txt">Megmutatjuk, a jövedelmed hány százalékát vinné el a törlesztő. A bankok ezt a jövedelemarányos törlesztőrészlet-mutatóval (JTM) vizsgálják, és ebbe a meglévő hiteleid is beleszámítanak.</p>
+      </div>
+
+      <div class="savebox" aria-labelledby="h-save">
+        <div>
+          <h3 id="h-save">Végtörlesztés megtakarítással</h3>
+          <p class="sub" style="margin-top:4px">Ha a törlesztő mellett havonta félreteszel egy szabadon felhasználható megtakarításba, a felgyűlt összegből a hitel a futamidő vége előtt egy összegben kifizethető.</p>
+        </div>
+        <div class="assume"><span>8% feltételezett éves hozam</span><span>évi 5% díjindexálás</span><span>kb. 2% éves költség</span></div>
+        <div class="feerow">
+          <div class="mini">
+            <label for="sav_fee">Havi megtakarítás (első évben)</label>
+            <div class="inbox"><input id="sav_fee" inputmode="numeric" autocomplete="off"><span class="unit">Ft / hó</span></div>
+          </div>
+          <button class="calc-btn ghost" type="button" id="sav_reset">Ajánlott összeg</button>
+        </div>
+        <p class="hint" id="sav_hint" style="margin:-6px 0 0"></p>
+        <div class="savekpis" id="sav_kpis">
+          <div><b class="num" id="sav_date">–</b><span>végtörlesztés várható ideje</span></div>
+          <div><b class="num" id="sav_early">–</b><span>korábban, mint a futamidő vége</span></div>
+          <div><b class="num" id="sav_int">–</b><span>kamatmegtakarítás</span></div>
+        </div>
+        <p class="savenote" id="sav_note"></p>
+        <div class="sumbox" id="sav_total" aria-live="polite"></div>
+        <a class="savego" href="/#megtakaritas">Ilyen megtakarítást segítek összerakni →</a>
+      </div>
+    </section>
+  </div>
+
+  <div class="duo">
+    <section class="panel" aria-labelledby="h-elo">
+      <h2 id="h-elo">Előtörlesztés</h2>
+      <p class="sub">Mi történik, ha menet közben egy nagyobb összeget befizetsz?</p>
+      <div class="grid2">
+        <div class="mini"><label for="pp_amount">Befizetett összeg</label>
+          <div class="inbox"><input id="pp_amount" inputmode="numeric" autocomplete="off" placeholder="0"><span class="unit">Ft</span></div></div>
+        <div class="mini"><label for="pp_month">Hányadik hónapban?</label>
+          <div class="inbox"><input id="pp_month" inputmode="numeric" autocomplete="off"><span class="unit">. hónap</span></div></div>
+      </div>
+      <div class="seg" role="group" aria-label="Előtörlesztés módja">
+        <button type="button" id="pp_mode_term" aria-pressed="true">Rövidebb futamidő</button>
+        <button type="button" id="pp_mode_pay" aria-pressed="false">Kisebb törlesztő</button>
+      </div>
+      <div class="save none" id="pp_res">Adj meg egy összeget, és megmutatjuk, mennyit spórolsz vele.</div>
+      <p class="hint" style="margin:10px 0 0">Az előtörlesztésnek díja lehet, ezt a számítás nem tartalmazza. Nézd meg a szerződésedben.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-cmp">
+      <h2 id="h-cmp">Összehasonlítás</h2>
+      <p class="sub">Mentsd el a változatokat, és nézd meg őket egymás mellett. Például ugyanaz a hitel 10 és 20 évre.</p>
+      <div class="calc-actions">
+        <button class="calc-btn" type="button" id="cmp_add">Változat mentése</button>
+        <button class="calc-btn ghost" type="button" id="link_copy">Link másolása</button>
+      </div>
+      <div class="linkout" id="linkbox" hidden><input id="linktxt" readonly aria-label="Megosztható link"></div>
+      <div class="cmpwrap"><table id="cmp" hidden><thead><tr><th>Változat</th><th>Összeg</th><th>Futamidő</th><th>Kamat</th><th>Törlesztő</th><th>Teljes kamat</th><th></th></tr></thead><tbody></tbody></table></div>
+      <p class="empty" id="cmp_empty">Még nincs mentett változat.</p>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-tabla">
+    <div class="thead">
+      <div><h2 id="h-tabla">Törlesztési terv</h2><p class="sub">Hónapról hónapra: mennyi megy a tőkére és mennyi a kamatra.</p></div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <label class="startd" for="start">Első törlesztés <input type="month" id="start"></label>
+        <div class="seg" role="group" aria-label="Táblázat nézet">
+          <button type="button" id="v_year" aria-pressed="true">Évente</button>
+          <button type="button" id="v_month" aria-pressed="false">Havonta</button>
+        </div>
+      </div>
+    </div>
+    <div class="tablewrap"><table id="sched"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="guide" aria-label="Tovább a Tudástárba">
+    <a class="gcard" id="g1" href="/#mennyit-kaphatok">
+      <span class="calc-eyebrow">Tudástár</span><b>Mennyi hitelt kaphatsz valójában?</b>
+      <p>Nem a kalkulátor dönti el, hanem két mutató: a JTM és a HFM. Mindkettőt ki lehet számolni előre.</p><span class="go">Elolvasom →</span></a>
+    <a class="gcard" id="g2" href="/#okoshitel">
+      <span class="calc-eyebrow">Tudástár</span><b>Rövidebb futamidő vagy okosabb?</b>
+      <p>A hosszabb futamidő és egy mellé tett megtakarítás együtt gyakran jobb, mint a lehető legrövidebb hitel.</p><span class="go">Elolvasom →</span></a>
+    <a class="gcard" id="g3" href="/#hitelkivaltas">
+      <span class="calc-eyebrow">Tudástár</span><b>Már van hiteled?</b>
+      <p>Kiváltás, futamidő-módosítás vagy előtörlesztés: mikor éri meg valójában, és mikor nem.</p><span class="go">Elolvasom →</span></a>
+  </section>
+
+  <section class="calc-cta" aria-labelledby="h-cta">
+    <div>
+      <h2 id="h-cta">A kalkulátor a matekot mutatja. A legjobb ajánlatot egy beszélgetés.</h2>
+      <p id="cta_txt">Több bank ajánlatát hasonlítom össze neked, és megnézzük, milyen állami támogatásokra lehetsz jogosult. Az első konzultáció díjmentes, és nem kötelez semmire.</p>
+      <div class="who">Kács Szabolcs · pénzügyi tanácsadó · +36 70 252 9159</div>
+    </div>
+    <a class="calc-btn" id="cta_btn" href="/#konzultacio">Ingyenes konzultációt kérek</a>
+  </section>
+
+  <p class="fine">A kalkuláció tájékoztató jellegű, annuitásos (egyenlő havi részletű) törlesztéssel és a teljes futamidőre változatlan kamattal számol. Nem tartalmazza a hitelhez kapcsolódó díjakat, biztosításokat és a kamatváltozást, ezért a banki számítástól eltérhet. A megtakarítási számítás évi 8%-os feltételezett hozammal, évi 5%-os díjindexálással és kb. 2%-os éves költséggel számol; a hozam nem garantált, a tényleges költségszerkezet termékenként eltér (az első években jellemzően magasabb), és az esetleges adó, valamint a végtörlesztés díja nincs benne. Nem minősül ajánlattételnek. A pontos feltételek minden esetben egyedi hitelbírálat alapján alakulnak.</p>
+</div>
+
+    <footer class="site-footer">
+      <p>
+        Az oldalon szereplő tartalmak tájékoztató jellegűek, általános ismeretterjesztést szolgálnak,
+        és nem minősülnek ajánlattételnek, pénzügyi tanácsadásnak vagy befektetési ajánlásnak.
+        A feltételek és összeghatárok időről időre változnak, és minden esetben egyedi elbírálás alá esnek.
+        A pontos, rád vonatkozó információkért kérj személyes egyeztetést.
+      </p>
+      <p class="copy">© <span id="year">2026</span> Kács Szabolcs · Minden jog fenntartva</p>
+    </footer>
+
+    <nav class="mobile-bar">
+      <a href="tel:+36702529159">📞 Hívás</a>
+      <a href="https://wa.me/36702529159">💬 WhatsApp</a>
+      <a href="/#konzultacio" id="mobile_cta">📅 Konzultáció</a>
+    </nav>
+
+  </main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const ft = v => Math.round(v).toLocaleString('hu-HU').replace(/[  ]/g, ' ') + ' Ft';
+  const mft = v => (v / 1e6).toLocaleString('hu-HU', {maximumFractionDigits: v < 1e7 ? 1 : 0}) + ' M';
+  const parse = s => { const n = parseFloat(String(s).replace(/\s/g, '').replace(',', '.')); return isFinite(n) ? n : NaN; };
+  const fmtIn = (f, v) => f === 'rate' ? (Math.round(v * 100) / 100).toLocaleString('hu-HU') :
+                          Math.round(v).toLocaleString('hu-HU').replace(/[  ]/g, ' ');
+  const yrs = m => { const y = Math.floor(m / 12), r = m % 12; return (y ? y + ' év' : '') + (y && r ? ' ' : '') + (r ? r + ' hónap' : ''); };
+
+  // ---- annuitás képletek ----
+  const pay = (A, n, ry) => { const r = ry / 1200; return r === 0 ? A / n : A * r / (1 - Math.pow(1 + r, -n)); };
+  const amountOf = (P, n, ry) => { const r = ry / 1200; return r === 0 ? P * n : P * (1 - Math.pow(1 + r, -n)) / r; };
+  const monthsOf = (A, P, ry) => { const r = ry / 1200; if (r === 0) return Math.ceil(A / P);
+    if (P <= A * r) return Infinity; return Math.ceil(-Math.log(1 - A * r / P) / Math.log(1 + r) - 1e-9); };
+  const rateOf = (A, n, P) => { if (P * n < A) return NaN; let lo = 0, hi = 100;
+    for (let i = 0; i < 80; i++) { const m = (lo + hi) / 2; pay(A, n, m) > P ? hi = m : lo = m; } return (lo + hi) / 2; };
+
+  // ---- állapot ----
+  const S = {amount: 20000000, months: 240, rate: 6.5, payment: 0, target: 'payment',
+             ppAmount: 0, ppMonth: 60, ppMode: 'term', view: 'year', income: 0,
+             saveFee: 25000, saveAuto: true};
+  // megtakarítási feltételezések
+  const SAV = {ret: 0.08, index: 0.05, cost: 0.02, min: 25000, share: 0.10};
+  const recFee = () => S.income > 0 ? Math.max(SAV.min, Math.round(S.income * SAV.share / 5000) * 5000) : SAV.min;
+  const FIELDS = ['amount', 'months', 'rate', 'payment'];
+
+  // URL-paraméterek (a megosztott link és a főoldali mini-kalkulátor visszatölti a számítást)
+  try { const q = new URLSearchParams(location.search);
+    for (const [k, key] of [['a','amount'],['n','months'],['r','rate'],['p','payment']]) if (q.has(k) && isFinite(+q.get(k)) && +q.get(k) >= 0) S[key] = +q.get(k);
+    if (FIELDS.includes(q.get('t'))) S.target = q.get('t');
+  } catch (e) {}
+
+  const d0 = new Date(); d0.setMonth(d0.getMonth() + 1);
+  $('start').value = d0.toISOString().slice(0, 7);
+
+  function solve() {
+    const {amount: A, months: n, rate: r, payment: P} = S;
+    let err = '';
+    if (S.target === 'payment') S.payment = pay(A, n, r);
+    else if (S.target === 'amount') S.amount = amountOf(P, n, r);
+    else if (S.target === 'months') { const m = monthsOf(A, P, r);
+      if (!isFinite(m)) err = 'Ekkora törlesztővel a hitel sosem fogyna el: a részlet nem fedezi a havi kamatot. Emeld a törlesztőt vagy csökkentsd az összeget.';
+      else if (m > 600) err = 'A futamidő 50 év fölé menne. Emeld a törlesztőt.';
+      else S.months = m; }
+    else if (S.target === 'rate') { const x = rateOf(A, n, P);
+      if (!isFinite(x)) err = 'A törlesztők összege kevesebb, mint a hitelösszeg, így ehhez nem tartozik pozitív kamat.';
+      else if (x > 99) err = 'Ehhez a törlesztőhöz irreálisan magas kamat tartozna.';
+      else S.rate = x; }
+    return err;
+  }
+
+  // törlesztési terv, opcionális előtörlesztéssel
+  function schedule(withPP) {
+    const r = S.rate / 1200; let bal = S.amount, P = S.payment, rows = [], n = S.months;
+    for (let k = 1; k <= 1200 && bal > 0.5; k++) {
+      const it = bal * r; let pr = Math.min(P - it, bal); if (k === n && S.target !== 'months') pr = bal;
+      let extra = 0;
+      bal -= pr;
+      if (withPP && S.ppAmount > 0 && k === S.ppMonth && bal > 0) {
+        extra = Math.min(S.ppAmount, bal); bal -= extra;
+        if (S.ppMode === 'pay' && bal > 0.5) P = pay(bal, n - k, S.rate);
+      }
+      rows.push({k, pay: pr + it, pr, it, extra, bal: Math.max(bal, 0), P});
+    }
+    return rows;
+  }
+
+  function render() {
+    const err = solve();
+    $('err').textContent = err;
+    FIELDS.forEach(f => {
+      const el = $(f), box = el.closest('.field');
+      box.classList.toggle('target', S.target === f);
+      el.readOnly = S.target === f;
+      if (document.activeElement !== el || S.target === f) el.value = fmtIn(f, S[f]);
+      $(f + '_r').value = S[f];
+    });
+    $('months_h').textContent = yrs(Math.round(S.months));
+    if (err) return;
+
+    const base = schedule(false), rows = schedule(true);
+    const totInt = rows.reduce((s, x) => s + x.it, 0), baseInt = base.reduce((s, x) => s + x.it, 0);
+    $('r_pay').innerHTML = ft(S.payment).replace(' Ft', '<small>Ft / hó</small>');
+    $('r_amount').textContent = ft(S.amount);
+    $('r_int').textContent = ft(baseInt);
+    $('r_total').textContent = ft(S.amount + baseInt);
+    const pp = S.amount / (S.amount + baseInt) * 100;
+    $('bar_p').style.width = pp + '%'; $('bar_i').style.width = (100 - pp) + '%';
+    $('p_pct').textContent = Math.round(pp) + '%'; $('i_pct').textContent = Math.round(100 - pp) + '%';
+
+    // előtörlesztés eredménye
+    const hasPP = S.ppAmount > 0 && S.ppMonth >= 1 && S.ppMonth < base.length;
+    const res = $('pp_res');
+    if (!hasPP) { res.className = 'save none';
+      res.textContent = S.ppAmount > 0 ? 'A befizetés hónapja essen a futamidőn belülre (1–' + (base.length - 1) + '. hónap).' : 'Adj meg egy összeget, és megmutatjuk, mennyit spórolsz vele.'; }
+    else { res.className = 'save';
+      const saved = baseInt - totInt;
+      res.innerHTML = S.ppMode === 'term'
+        ? `Kamatmegtakarítás: <b class="num">${ft(saved)}</b>. A futamidő <b>${yrs(base.length - rows.length) || '0 hónap'}</b>-pal rövidebb lesz, a hitel ${yrs(rows.length)} alatt fut ki.`
+        : `Kamatmegtakarítás: <b class="num">${ft(saved)}</b>. Az új havi törlesztő <b class="num">${ft(rows[rows.length - 1].P)}</b> lesz (eddig ${ft(S.payment)}).`;
+    }
+
+    const used = hasPP ? rows : base;
+    if (S.saveAuto) S.saveFee = recFee();
+    const plan = savePlan(used);
+    drawSave(plan, used);
+    drawChart(used, hasPP ? base : null, plan);
+    drawTable(used);
+    drawJTM();
+    highlightGuide(hasPP);
+    updateCta();
+  }
+
+  // A konzultációs gomb átadja a számítást a főoldali űrlapnak: /?calc=összeg-hónap-kamat-törlesztő#konzultacio
+  function updateCta() {
+    const calc = [Math.round(S.amount), Math.round(S.months), Math.round(S.rate * 100) / 100, Math.round(S.payment)].join('-');
+    const href = '/?calc=' + calc + '#konzultacio';
+    $('cta_btn').href = href;
+    $('mobile_cta').href = href;
+  }
+
+  // Megtakarítás havonta: befizetés a hónap elején, havi hozam és költség, a díj évente 5%-kal nő.
+  // Végtörlesztés abban a hónapban, amikor az egyenleg eléri a még fennálló tőketartozást.
+  function savePlan(rows) {
+    const rs = Math.pow(1 + SAV.ret, 1 / 12) - 1, cm = Math.pow(1 - SAV.cost, 1 / 12);
+    let bal = 0, paid = 0, fee = S.saveFee, pts = [], hit = null;
+    if (!(fee > 0)) return {pts, hit};
+    for (const r of rows) {
+      if (r.k > 1 && (r.k - 1) % 12 === 0) fee *= 1 + SAV.index;
+      bal = (bal + fee) * (1 + rs) * cm; paid += fee;
+      pts.push({k: r.k, s: bal});
+      if (bal >= r.bal && r.k < rows.length) { hit = {k: r.k, bal, paid, loan: r.bal, fee}; break; }
+    }
+    return {pts, hit, paid, bal};
+  }
+
+  const dateOf = k => { const [y0, m0] = $('start').value.split('-').map(Number);
+    const d = new Date(y0 || 2026, (m0 || 1) - 1 + k - 1, 1); return d.getFullYear() + '. ' + String(d.getMonth() + 1).padStart(2, '0') + '.'; };
+
+  function drawSave(plan, rows) {
+    const rec = recFee();
+    if (S.saveAuto) S.saveFee = rec;
+    if (document.activeElement !== $('sav_fee')) $('sav_fee').value = fmtIn('saveFee', S.saveFee);
+    $('sav_hint').textContent = S.income > 0
+      ? `Ajánlott: ${ft(rec)} / hó, a nettó jövedelmed kb. 10%-a (legalább 25 000 Ft).`
+      : 'Ajánlott: legalább 25 000 Ft / hó. Add meg fent a jövedelmedet, és ahhoz igazítjuk.';
+    if (S.saveFee < SAV.min) $('sav_hint').textContent += ' A kalkuláció 25 000 Ft-tól ad reális képet.';
+    const h = plan.hit;
+    if (!h) {
+      ['sav_date', 'sav_early', 'sav_int'].forEach(id => $(id).textContent = '–');
+      $('sav_note').innerHTML = S.saveFee > 0 ? 'Ezzel az összeggel a megtakarítás a futamidő végéig nem éri utol a tőketartozást. Emeld a havi összeget.' : '';
+      $('sav_total').innerHTML = '';
+      return;
+    }
+    const totInt = rows.reduce((s, x) => s + x.it, 0), paidInt = rows.slice(0, h.k).reduce((s, x) => s + x.it, 0);
+    const early = rows.length - h.k;
+    $('sav_date').textContent = dateOf(h.k);
+    $('sav_early').textContent = yrs(early);
+    $('sav_int').textContent = ft(totInt - paidInt);
+    $('sav_note').innerHTML = `A végtörlesztéskor <b>${yrs(h.k)}</b> után a számlán kb. <b>${ft(h.bal)}</b> lesz, a tőketartozás <b>${ft(h.loan)}</b>. ` +
+      `Addig összesen <b>${ft(h.paid)}</b>-ot fizetsz be a megtakarításba, a havi összeg az indexálással a végére <b>${ft(h.fee)}</b>-ra nő. ` +
+      (h.bal - h.loan > 1000 ? `A végtörlesztés után kb. ${ft(h.bal - h.loan)} marad a számlán.` : '');
+    const intSaved = totInt - paidInt, gain = h.bal - h.paid;
+    $('sav_total').innerHTML =
+      `<div class="sumrow"><span>Megspórolt hitelkamat</span><b class="num">${ft(intSaved)}</b></div>` +
+      `<div class="sumrow"><span>A megtakarítás feltételezett hozama (költségek után)</span><b class="num">${ft(gain)}</b></div>` +
+      `<div class="sumrow tot"><span>Összes anyagi előny</span><b class="num">${ft(intSaved + gain)}</b></div>`;
+  }
+
+  function drawChart(rows, base, plan) {
+    const W = 640, H = 230, L = 46, R = 10, T = 10, B = 26, svg = $('chart');
+    const N = Math.max(rows.length, base ? base.length : 0);
+    const maxY = Math.max(S.amount, (base || rows).reduce((s, x) => s + x.it, 0));
+    const x = k => L + (k / N) * (W - L - R), y = v => T + (1 - v / maxY) * (H - T - B);
+    const line = (arr, f) => 'M' + x(0) + ',' + y(f(null)) + arr.map(r => 'L' + x(r.k).toFixed(1) + ',' + y(f(r)).toFixed(1)).join('');
+    let cum = 0; const cumRows = rows.map(r => ({k: r.k, c: (cum += r.it)}));
+    let g = '';
+    for (let i = 0; i <= 4; i++) { const v = maxY * i / 4;
+      g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/>` +
+           `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${mft(v)}</text>`; }
+    const yearsN = Math.ceil(N / 12), step = yearsN > 20 ? 5 : yearsN > 8 ? 2 : 1;
+    for (let yr = 0; yr <= yearsN; yr += step) { const tx = x(Math.min(yr * 12, N));
+      g += `<text x="${tx}" y="${H - 6}" text-anchor="${tx > W - R - 20 ? 'end' : 'middle'}">${yr}. év</text>`; }
+    if (base) g += `<path d="${line(base, r => r ? r.bal : S.amount)}" fill="none" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+    const bp = line(rows, r => r ? r.bal : S.amount);
+    g += `<path d="${bp}L${x(rows.length)},${y(0)}L${x(0)},${y(0)}Z" fill="var(--principal)" fill-opacity=".14"/>`;
+    g += `<path d="${bp}" fill="none" stroke="var(--principal)" stroke-width="2.5"/>`;
+    g += `<path d="${line(cumRows, r => r ? r.c : 0)}" fill="none" stroke="var(--gold)" stroke-width="2.5"/>`;
+    const last = cumRows[cumRows.length - 1];
+    g += `<circle cx="${x(last.k)}" cy="${y(last.c)}" r="4.5" fill="var(--gold)"/>`;
+    if (plan && plan.hit) {
+      const h = plan.hit, sp = 'M' + x(0) + ',' + y(0) + plan.pts.map(p => 'L' + x(p.k).toFixed(1) + ',' + y(Math.min(p.s, maxY)).toFixed(1)).join('');
+      g += `<path d="${sp}" fill="none" stroke="var(--save)" stroke-width="2.5" stroke-dasharray="6 4"/>`;
+      g += `<line x1="${x(h.k)}" x2="${x(h.k)}" y1="${T}" y2="${H - B}" stroke="var(--save)" stroke-width="1" stroke-dasharray="2 4"/>`;
+      g += `<circle cx="${x(h.k)}" cy="${y(h.loan)}" r="5" fill="var(--save)"/>`;
+      const lx = x(h.k), anchor = lx > W - 120 ? 'end' : 'start', dx = anchor === 'end' ? -8 : 8;
+      g += `<text x="${lx + dx}" y="${T + 12}" text-anchor="${anchor}" style="fill:var(--save);font-weight:700">Végtörlesztés</text>`;
+    }
+    svg.innerHTML = g;
+    $('leg_base').hidden = !base;
+    $('leg_save').hidden = !(plan && plan.hit);
+  }
+
+  function drawTable(rows) {
+    const [y0, m0] = $('start').value.split('-').map(Number);
+    const date = k => { const d = new Date(y0 || 2026, (m0 || 1) - 1 + k - 1, 1); return d.getFullYear() + '. ' + String(d.getMonth() + 1).padStart(2, '0') + '.'; };
+    const thead = $('sched').tHead, tb = $('sched').tBodies[0];
+    let h = '';
+    if (S.view === 'month') {
+      thead.innerHTML = '<tr><th>Hónap</th><th>Dátum</th><th>Törlesztés</th><th>Tőke</th><th>Kamat</th><th>Előtörlesztés</th><th>Tőketartozás</th></tr>';
+      rows.forEach(r => h += `<tr class="${r.extra ? 'pp' : ''}"><td>${r.k}.</td><td>${date(r.k)}</td><td>${ft(r.pay)}</td><td>${ft(r.pr)}</td><td>${ft(r.it)}</td><td>${r.extra ? ft(r.extra) : '–'}</td><td>${ft(r.bal)}</td></tr>`);
+    } else {
+      thead.innerHTML = '<tr><th>Év</th><th>Időszak</th><th>Befizetés</th><th>Tőke</th><th>Kamat</th><th>Előtörlesztés</th><th>Tőketartozás év végén</th></tr>';
+      for (let i = 0; i < rows.length; i += 12) { const c = rows.slice(i, i + 12), s = k => c.reduce((a, r) => a + r[k], 0);
+        const ex = s('extra');
+        h += `<tr class="${ex ? 'pp' : ''}"><td>${i / 12 + 1}.</td><td>${date(c[0].k)} – ${date(c[c.length - 1].k)}</td><td>${ft(s('pay'))}</td><td>${ft(s('pr'))}</td><td>${ft(s('it'))}</td><td>${ex ? ft(ex) : '–'}</td><td>${ft(c[c.length - 1].bal)}</td></tr>`; }
+    }
+    tb.innerHTML = h;
+  }
+
+  function drawJTM() {
+    const pill = $('jtm_pill'), t = $('jtm_txt');
+    if (!(S.income > 0)) { pill.hidden = true; return; }
+    const p = S.payment / S.income * 100; pill.hidden = false;
+    pill.textContent = 'A jövedelmed ' + Math.round(p) + '%-a';
+    pill.className = 'pill ' + (p <= 30 ? 'ok' : p <= 50 ? 'mid' : 'hi');
+    t.innerHTML = p <= 30 ? 'Ez kényelmes arány: rosszabb hónapokban is marad mozgástered. A bank a meglévő hiteleidet is hozzáadja.'
+      : p <= 50 ? 'Ez már feszesebb. A bank által engedett felső határ (JTM) függ a jövedelmedtől és a kamatfixálástól, a meglévő hiteleid pedig ebből a keretből vesznek el. <a href="/#mennyit-kaphatok">Hogyan számolják?</a>'
+      : 'Ez nagy valószínűséggel a banki limit fölött van, és megterhelő is lehet. Érdemes hosszabb futamidővel vagy kisebb összeggel számolni. <a href="/#konzultacio">Nézzük meg együtt</a>';
+  }
+
+  function highlightGuide(hasPP) {
+    const p = S.income > 0 ? S.payment / S.income : 0;
+    $('g1').classList.toggle('hot', p > .3);
+    $('g2').classList.toggle('hot', S.months <= 180 && S.amount >= 5e6);
+    $('g3').classList.toggle('hot', hasPP);
+  }
+
+  // ---- események ----
+  FIELDS.forEach(f => {
+    $(f).addEventListener('input', e => { const v = parse(e.target.value); if (v > 0 || (f === 'rate' && v === 0)) { S[f] = f === 'months' ? Math.round(v) : v; render(); } });
+    $(f).addEventListener('blur', () => render());
+    $(f + '_r').addEventListener('input', e => { if (S.target === f) return; S[f] = +e.target.value; render(); });
+  });
+  document.querySelectorAll('input[name=target]').forEach(r => { r.checked = r.value === S.target;
+    r.addEventListener('change', () => { S.target = r.value; render(); }); });
+  $('pp_amount').addEventListener('input', e => { S.ppAmount = parse(e.target.value) || 0; render(); });
+  $('pp_month').value = S.ppMonth;
+  $('pp_month').addEventListener('input', e => { S.ppMonth = Math.round(parse(e.target.value)) || 0; render(); });
+  const seg = (a, b, key, va, vb) => { $(a).onclick = () => { S[key] = va; $(a).setAttribute('aria-pressed', 'true'); $(b).setAttribute('aria-pressed', 'false'); render(); };
+    $(b).onclick = () => { S[key] = vb; $(b).setAttribute('aria-pressed', 'true'); $(a).setAttribute('aria-pressed', 'false'); render(); }; };
+  seg('pp_mode_term', 'pp_mode_pay', 'ppMode', 'term', 'pay');
+  seg('v_year', 'v_month', 'view', 'year', 'month');
+  $('start').addEventListener('change', render);
+  $('income').addEventListener('input', e => { S.income = parse(e.target.value) || 0; render(); });
+  $('sav_fee').addEventListener('input', e => { const v = parse(e.target.value); S.saveFee = v > 0 ? v : 0; S.saveAuto = false; render(); });
+  $('sav_fee').addEventListener('blur', render);
+  $('sav_reset').onclick = () => { S.saveAuto = true; render(); };
+
+  // összehasonlítás
+  let cmp = [];
+  try { cmp = JSON.parse(localStorage.getItem('esm_cmp') || '[]'); } catch (e) {}
+  const saveCmp = () => { try { localStorage.setItem('esm_cmp', JSON.stringify(cmp)); } catch (e) {} };
+  function drawCmp() {
+    const t = $('cmp'); t.hidden = !cmp.length; $('cmp_empty').hidden = !!cmp.length;
+    const best = Math.min(...cmp.map(c => c.int));
+    t.tBodies[0].innerHTML = cmp.map((c, i) => `<tr><td>${i + 1}. változat${c.int === best && cmp.length > 1 ? ' <span class="pill ok">legkevesebb kamat</span>' : ''}</td><td>${ft(c.a)}</td><td>${yrs(c.n)}</td><td>${c.r.toLocaleString('hu-HU', {maximumFractionDigits: 2})}%</td><td>${ft(c.p)}</td><td>${ft(c.int)}</td><td><button class="x" data-i="${i}" aria-label="${i + 1}. változat törlése">×</button></td></tr>`).join('');
+    t.querySelectorAll('.x').forEach(b => b.onclick = () => { cmp.splice(+b.dataset.i, 1); saveCmp(); drawCmp(); });
+  }
+  $('cmp_add').onclick = () => { if ($('err').textContent) return;
+    const int = schedule(false).reduce((s, x) => s + x.it, 0);
+    cmp.push({a: S.amount, n: Math.round(S.months), r: S.rate, p: S.payment, int}); if (cmp.length > 5) cmp.shift(); saveCmp(); drawCmp(); };
+
+  // megosztható link
+  $('link_copy').onclick = () => {
+    const q = new URLSearchParams({a: Math.round(S.amount), n: Math.round(S.months), r: Math.round(S.rate * 100) / 100, p: Math.round(S.payment), t: S.target});
+    const url = location.origin + location.pathname + '?' + q;
+    $('linkbox').hidden = false; $('linktxt').value = url;
+    const done = () => { $('link_copy').textContent = 'Link kimásolva'; setTimeout(() => $('link_copy').textContent = 'Link másolása', 1800); };
+    try { navigator.clipboard.writeText(url).then(done, () => $('linktxt').select()); } catch (e) { $('linktxt').select(); }
+  };
+
+  const yearEl = $('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+  render(); drawCmp();
+})();
+</script>
+</body>
+</html>

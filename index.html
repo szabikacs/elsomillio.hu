@@ -47,7 +47,11 @@
         </svg>
         <span class="brand-name">Kács Szabolcs<small>pénzügyi tanácsadó</small></span>
       </a>
-      <a class="brand-cta" href="tel:+36702529159">+36 70 252 9159</a>
+      <nav class="brand-nav" aria-label="Fő navigáció">
+        <a class="brand-link" href="/kalkulator">Kalkulátor</a>
+        <a class="brand-cta" href="#konzultacio">Konzultáció</a>
+        <a class="brand-phone" href="tel:+36702529159">+36 70 252 9159</a>
+      </nav>
     </header>
 
     <section class="hero">
@@ -128,59 +132,90 @@
       <h2>Miben tudok segíteni?</h2>
 
       <div class="grid">
-        <a href="#elso-lakas" class="service-card">
+        <a href="#elso-lakas" class="service-card" style="--card-img: url('img/kartyak/01_otthon_start.png')">
           <span>⌂</span>
           <h3>Otthon Start</h3>
           <p>Mennyi önerő kell, mennyi hitelt kaphatsz, és jogosult vagy-e rá egyáltalán.</p>
         </a>
 
-        <a href="#mennyi-penz" class="service-card">
+        <a href="#mennyi-penz" class="service-card" style="--card-img: url('img/kartyak/02_teljes_koltseg.png')">
           <span>▤</span>
           <h3>A teljes költség</h3>
           <p>A vételár csak a kezdet. Átvesszük, mi jön még mellé — előre, nem utólag.</p>
         </a>
 
-        <a href="#palyakezdo" class="service-card">
+        <a href="#palyakezdo" class="service-card" style="--card-img: url('img/kartyak/03_munkashitel.png')">
           <span>↑</span>
           <h3>Munkáshitel</h3>
           <p>Kamatmentes lehetőség huszonéveseknek. Megnézzük, jogosult vagy-e.</p>
         </a>
 
-        <a href="#mennyit-kaphatok" class="service-card">
+        <a href="#mennyit-kaphatok" class="service-card" style="--card-img: url('img/kartyak/04_mennyit_kaphatok.png')">
           <span>≡</span>
           <h3>Mennyit kaphatok?</h3>
           <p>Két mutató dönti el. Mindkettőt ki lehet számolni, mielőtt bárhová bemész.</p>
         </a>
 
-        <a href="#okoshitel" class="service-card">
+        <a href="#okoshitel" class="service-card" style="--card-img: url('img/kartyak/05_okoshitel.png')">
           <span>◈</span>
           <h3>Okoshitel</h3>
           <p>Miért nem a legrövidebb futamidő a legokosabb választás?</p>
         </a>
 
-        <a href="#csalad" class="service-card">
+        <a href="#csalad" class="service-card" style="--card-img: url('img/kartyak/06_csok_babavaro.png')">
           <span>◌</span>
           <h3>CSOK Plusz, Babaváró</h3>
           <p>Mit jelent „vállalni” egy gyermeket egy szerződésben, és mi a tétje.</p>
         </a>
 
-        <a href="#hitelkivaltas" class="service-card">
+        <a href="#hitelkivaltas" class="service-card" style="--card-img: url('img/kartyak/07_meglevo_hitelek.png')">
           <span>⇄</span>
           <h3>Meglévő hitelek</h3>
           <p>Hitelkiváltás, futamidő-módosítás, előtörlesztés — mikor éri meg valójában.</p>
         </a>
 
-        <a href="#nyugdij" class="service-card">
+        <a href="#nyugdij" class="service-card" style="--card-img: url('img/kartyak/08_nyugdij.png')">
           <span>↻</span>
           <h3>Nyugdíj</h3>
           <p>Miért ér többet 20 év előny, mint a duplája annak, amit később félreteszel.</p>
         </a>
 
-        <a href="#megtakaritas" class="service-card">
+        <a href="#megtakaritas" class="service-card" style="--card-img: url('img/kartyak/09_megtakaritas.png')">
           <span>▲</span>
           <h3>Megtakarítás</h3>
           <p>Hol vannak a költségek, mit fizetnek meg a bónuszok, és miért kell értékkövetés.</p>
         </a>
+      </div>
+    </section>
+
+    <section class="services mini-calc reveal" id="kalkulator" aria-labelledby="mc-title">
+      <p class="section-label">Hitelkalkulátor</p>
+      <h2 id="mc-title">Számold ki, mielőtt bemész a bankba</h2>
+
+      <div class="mc-grid">
+        <div class="mc-fields">
+          <label class="mc-field">
+            <span>Hitelösszeg</span>
+            <span class="mc-box"><input id="mc_amount" inputmode="numeric" autocomplete="off" value="20 000 000"><em>Ft</em></span>
+          </label>
+          <label class="mc-field">
+            <span>Futamidő</span>
+            <span class="mc-box"><input id="mc_years" inputmode="numeric" autocomplete="off" value="20"><em>év</em></span>
+          </label>
+          <label class="mc-field">
+            <span>Éves kamat</span>
+            <span class="mc-box"><input id="mc_rate" inputmode="decimal" autocomplete="off" value="6,5"><em>%</em></span>
+          </label>
+        </div>
+
+        <div class="mc-result" aria-live="polite">
+          <p class="mc-label">Havi törlesztőrészlet</p>
+          <p class="mc-pay"><strong id="mc_pay">149 115</strong> <span>Ft / hó</span></p>
+          <p class="mc-sub">Teljes kamat: <strong id="mc_int">15 787 512 Ft</strong></p>
+          <a class="btn primary" id="mc_go" href="/kalkulator?a=20000000&amp;n=240&amp;r=6.5&amp;t=payment">Részletes számítás →</a>
+          <p class="mc-note">Előtörlesztés, végtörlesztés megtakarítással és törlesztési terv a részletes kalkulátorban.
+            Tájékoztató számítás, ügyleti kamattal.</p>
+        </div>
       </div>
     </section>
 
@@ -280,6 +315,7 @@
             Mindkét szám kiszámolható <em>azelőtt</em>, hogy foglalót adnál. Sok helyen kérhető előzetes értékbecslés is.
             Aki ezt kihagyja, az a foglalóját teszi kockára.
           </p>
+          <p class="try-calc"><a href="/kalkulator">Próbáld ki a kalkulátorral →</a></p>
         </details>
 
         <details id="okoshitel">
@@ -305,6 +341,7 @@
             a rosszabbakban is. Ezt a párosítást viszont nehéz egyedül összerakni: a hitelnek és a megtakarításnak
             passzolnia kell egymáshoz, futamidőben, hozzáférhetőségben és összegben is.
           </p>
+          <p class="try-calc"><a href="/kalkulator?a=20000000&amp;n=240&amp;r=6.5&amp;t=payment">Próbáld ki a kalkulátorral →</a></p>
         </details>
 
         <details id="nyugdij">
@@ -450,6 +487,7 @@
             Egy tisztességes átnézés végeredménye az is lehet, hogy „ne csinálj semmit”.
             Ez is információ, és többet ér, mint egy tipp.
           </p>
+          <p class="try-calc"><a href="/kalkulator">Próbáld ki a kalkulátorral →</a></p>
         </details>
       </div>
     </section>
